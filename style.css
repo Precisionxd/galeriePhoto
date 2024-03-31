@@ -1,0 +1,44 @@
+/* CSS style for table */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th,
+td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+/* CSS styles for the links */
+a{
+    color: blue;
+    text-decoration: none;
+}
+
+a, p {
+    display: inline;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* CSS styles for body */
+
+h1 {
+    text-align: center;
+}
+
+/* CSS styles for images */
+
+.centered-image {
+    display: block;
+    margin: 0 auto;
+}
