@@ -268,6 +268,7 @@ document.getElementById("uploadForm").onsubmit = async function (event) {
   }
 };
 
+// Load User's Photos with Pagination, Comments, and Likes
 async function loadGallery(page = 1) {
   const token = localStorage.getItem("token");
   const response = await fetch(
@@ -417,6 +418,27 @@ async function loadGallery(page = 1) {
   }
 }
 
+// Load Likes for a Photo
+async function loadLikes(photoId, likesDiv) {
+  const token = localStorage.getItem("token");
+  const response = await fetch(
+    `http://localhost:3000/api/photos/${photoId}/likes`,
+    {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    }
+  );
+  if (response.ok) {
+    const likeCount = await response.json();
+    const likeSpan = likesDiv.querySelector(".like-count");
+    likeSpan.innerText = likeCount;
+  } else {
+    alert("Failed to fetch likes: " + response.statusText);
+  }
+}
+
+// Load Comments for a Photo
 async function loadComments(photoId, commentsDiv) {
   const token = localStorage.getItem("token");
   const response = await fetch(
@@ -441,25 +463,6 @@ async function loadComments(photoId, commentsDiv) {
     });
   } else {
     alert("Failed to fetch comments: " + response.statusText);
-  }
-}
-
-async function loadLikes(photoId, likesDiv) {
-  const token = localStorage.getItem("token");
-  const response = await fetch(
-    `http://localhost:3000/api/photos/${photoId}/likes`,
-    {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-  if (response.ok) {
-    const likeCount = await response.json();
-    const likeSpan = likesDiv.querySelector(".like-count");
-    likeSpan.innerText = likeCount;
-  } else {
-    alert("Failed to fetch likes: " + response.statusText);
   }
 }
 
