@@ -8,7 +8,6 @@ const bcrypt = require("bcryptjs");
 const path = require("path");
 
 const app = express();
-const upload = multer({ dest: "uploads/" });
 
 // Middleware
 app.use(bodyParser.json());
@@ -32,6 +31,7 @@ mongoose
 const UserSchema = new mongoose.Schema({
   username: String,
   password: String,
+  profilePicture: String, // Added profilePicture field
 });
 
 const User = mongoose.model("User", UserSchema);
@@ -42,7 +42,7 @@ const PhotoSchema = new mongoose.Schema({
   filename: String,
   originalName: String,
   uploadDate: Date,
-  description: String, // Added description field
+  description: String,
 });
 
 const Photo = mongoose.model("Photo", PhotoSchema);
@@ -67,6 +67,17 @@ function verifyToken(req, res, next) {
     res.sendStatus(403);
   }
 }
+
+// Multer configuration for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
 
 // User Registration
 app.post("/api/register", async (req, res) => {
@@ -132,19 +143,19 @@ app.get("/api/users", verifyToken, async (req, res) => {
   }
 });
 
-/// Modify the upload endpoint to accept descriptions
+// Modify the upload endpoint to accept descriptions
 app.post(
   "/api/upload",
   verifyToken,
   upload.single("photo"),
   async (req, res) => {
-    const { description } = req.body; // Get description from the request body
+    const { description } = req.body;
     const newPhoto = new Photo({
       userId: req.user.id,
       filename: req.file.filename,
       originalName: req.file.originalname,
       uploadDate: new Date(),
-      description: description || "", // Set the description
+      description: description || "",
     });
     try {
       await newPhoto.save();
@@ -157,7 +168,7 @@ app.post(
 
 // Get User's Photos with Pagination
 app.get("/api/photos", verifyToken, async (req, res) => {
-  const { page = 1, limit = 10 } = req.query; // Get page and limit from query params
+  const { page = 1, limit = 10 } = req.query;
   try {
     const photos = await Photo.find({ userId: req.user.id })
       .limit(limit * 1)
@@ -255,6 +266,65 @@ app.get("/api/photos/:id/comments", verifyToken, async (req, res) => {
     res.json(comments);
   } catch (error) {
     res.status(500).send("Error fetching comments");
+  }
+});
+
+// Like Schema and Model
+const LikeSchema = new mongoose.Schema({
+  photoId: String,
+  userId: String,
+});
+
+const Like = mongoose.model("Like", LikeSchema);
+
+// Like Photo
+app.post("/api/photos/:id/like", verifyToken, async (req, res) => {
+  const newLike = new Like({
+    photoId: req.params.id,
+    userId: req.user.id,
+  });
+  try {
+    await newLike.save();
+    res.status(200).send("Photo liked successfully");
+  } catch (error) {
+    res.status(500).send("Error liking photo");
+  }
+});
+
+// Get Likes for Photo
+app.get("/api/photos/:id/likes", verifyToken, async (req, res) => {
+  try {
+    const likes = await Like.find({ photoId: req.params.id });
+    res.json(likes.length);
+  } catch (error) {
+    res.status(500).send("Error fetching likes");
+  }
+});
+
+// Add Profile Picture to User
+app.post(
+  "/api/user/profilePicture",
+  verifyToken,
+  upload.single("profilePicture"),
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      user.profilePicture = req.file.filename;
+      await user.save();
+      res.status(200).send("Profile picture updated successfully");
+    } catch (error) {
+      res.status(500).send("Error updating profile picture");
+    }
+  }
+);
+
+// Get Profile Picture
+app.get("/api/user/profilePicture", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.sendFile(path.join(__dirname, "uploads", user.profilePicture));
+  } catch (error) {
+    res.status(500).send("Error fetching profile picture");
   }
 });
 

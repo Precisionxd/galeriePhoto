@@ -49,28 +49,7 @@
         <button type="submit">Upload</button>
       </form>
       <h2>Your Photos</h2>
-      <div id="gallery">
-        <div class="photo-container">
-          <img src="path_to_image" alt="description" />
-          <div class="photo-details">
-            <p>Description: description</p>
-            <p>Original Name: original_name</p>
-            <p>Upload Date: upload_date</p>
-            <button class="delete-button">Delete</button>
-            <div class="comments">
-              <form class="comment-form">
-                <input
-                  type="text"
-                  class="comment-input"
-                  placeholder="Add a comment"
-                />
-                <button type="submit" class="comment-submit">Comment</button>
-              </form>
-              <div class="comment-list"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="gallery"></div>
       <h2>All Users</h2>
       <div id="users"></div>
     </div>
@@ -87,6 +66,17 @@
         />
         <button type="submit">Update</button>
       </form>
+      <h2>Profile Picture</h2>
+      <form id="profilePictureForm" enctype="multipart/form-data">
+        <input type="file" id="profilePicture" name="profilePicture" required />
+        <button type="submit">Upload</button>
+      </form>
+      <img
+        id="profilePictureImg"
+        src=""
+        alt="Profile Picture"
+        style="display: none"
+      />
     </div>
     <div id="search" style="display: none">
       <h2>Search Photos</h2>
