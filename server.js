@@ -93,6 +93,18 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Update User Password
+app.post('/api/updatePassword', verifyToken, async (req, res) => {
+  const { password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    await User.findByIdAndUpdate(req.user.id, { password: hashedPassword });
+    res.status(200).send('Password updated successfully');
+  } catch (error) {
+    res.status(500).send('Error updating password');
+  }
+});
+
 // Get User Information
 app.get('/api/user', verifyToken, async (req, res) => {
   try {

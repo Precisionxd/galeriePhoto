@@ -37,6 +37,7 @@ document.getElementById('loginForm').onsubmit = async function(event) {
     document.getElementById('login').style.display = 'none';
     document.getElementById('upload').style.display = 'block';
     document.getElementById('logoutButton').style.display = 'block';
+    document.getElementById('profileButton').style.display = 'block';
     loadUser();
     loadGallery();
     loadUsers();
@@ -52,14 +53,67 @@ document.getElementById('logoutButton').onclick = function() {
   document.getElementById('upload').style.display = 'none';
   document.getElementById('login').style.display = 'block';
   document.getElementById('logoutButton').style.display = 'none';
+  document.getElementById('profileButton').style.display = 'none';
   document.getElementById('userInfo').innerText = '';
+  document.getElementById('profile').style.display = 'none';
+};
+
+// Profile Navigation
+document.getElementById('profileButton').onclick = function() {
+  document.getElementById('upload').style.display = 'none';
+  document.getElementById('profile').style.display = 'block';
+  loadProfile();
+};
+
+// Load Profile Information
+async function loadProfile() {
+  const token = localStorage.getItem('token');
+  const response = await fetch('http://localhost:3000/api/user', {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (response.ok) {
+    const user = await response.json();
+    document.getElementById('profileUsername').value = user.username;
+  } else {
+    const error = await response.json();
+    alert('Failed to fetch profile information: ' + error.message);
+  }
+}
+
+// Profile Form (Update Password)
+document.getElementById('profileForm').onsubmit = async function(event) {
+  event.preventDefault();
+  const token = localStorage.getItem('token');
+  const password = document.getElementById('profilePassword').value;
+  if (password) {
+    const response = await fetch('http://localhost:3000/api/updatePassword', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ password })
+    });
+    if (response.ok) {
+      alert('Password updated successfully');
+      document.getElementById('profilePassword').value = '';
+    } else {
+      const error = await response.json();
+      alert('Failed to update password: ' + error.message);
+    }
+  } else {
+    alert('Please enter a new password');
+  }
 };
 
 // Load User Information
 async function loadUser() {
+  const token = localStorage.getItem('token');
   const response = await fetch('http://localhost:3000/api/user', {
     headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('token')
+      'Authorization': 'Bearer ' + token
     }
   });
   if (response.ok) {
@@ -73,9 +127,10 @@ async function loadUser() {
 
 // Load All Users
 async function loadUsers() {
+  const token = localStorage.getItem('token');
   const response = await fetch('http://localhost:3000/api/users', {
     headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('token')
+      'Authorization': 'Bearer ' + token
     }
   });
   if (response.ok) {
@@ -96,12 +151,14 @@ async function loadUsers() {
 // Upload Photo Form
 document.getElementById('uploadForm').onsubmit = async function(event) {
   event.preventDefault();
+  const token = localStorage.getItem('token');
+  const photo = document.getElementById('photo').files[0];
   const formData = new FormData();
-  formData.append('photo', document.getElementById('photo').files[0]);
+  formData.append('photo', photo);
   const response = await fetch('http://localhost:3000/api/upload', {
     method: 'POST',
     headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('token')
+      'Authorization': 'Bearer ' + token
     },
     body: formData
   });
@@ -109,15 +166,15 @@ document.getElementById('uploadForm').onsubmit = async function(event) {
     alert('Photo uploaded successfully!');
     loadGallery();
   } else {
-    const error = await response.json();
-    alert('Failed to upload photo: ' + error.message);
+    alert('Failed to upload photo: ' + response.statusText);
   }
 };
 
 async function loadGallery() {
+  const token = localStorage.getItem('token');
   const response = await fetch('http://localhost:3000/api/photos', {
     headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('token')
+      'Authorization': 'Bearer ' + token
     }
   });
   if (response.ok) {
@@ -131,7 +188,6 @@ async function loadGallery() {
       gallery.appendChild(img);
     });
   } else {
-    const error = await response.json();
-    alert('Failed to fetch photos: ' + error.message);
+    alert('Failed to fetch photos: ' + response.statusText);
   }
 }

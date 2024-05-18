@@ -11,6 +11,7 @@
   <div id="user">
     <span id="userInfo"></span>
     <button id="logoutButton" style="display: none;">Logout</button>
+    <button id="profileButton" style="display: none;">Profile</button>
   </div>
   <div id="register">
     <h2>Register</h2>
@@ -38,6 +39,16 @@
     <div id="gallery"></div>
     <h2>All Users</h2>
     <div id="users"></div>
+  </div>
+  <div id="profile" style="display: none;">
+    <h2>Profile</h2>
+    <form id="profileForm">
+      <label for="profileUsername">Username</label>
+      <input type="text" id="profileUsername" placeholder="Username" required disabled>
+      <label for="profilePassword">New Password</label>
+      <input type="password" id="profilePassword" placeholder="New Password">
+      <button type="submit">Update</button>
+    </form>
   </div>
   <script src="app.js"></script>
 </body>
