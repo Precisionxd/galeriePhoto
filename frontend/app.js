@@ -13,7 +13,8 @@ document.getElementById('registerForm').onsubmit = async function(event) {
   if (response.ok) {
     alert('User registered successfully!');
   } else {
-    alert('Registration failed');
+    const error = await response.json();
+    alert('Registration failed: ' + error.message);
   }
 };
 
@@ -35,12 +36,23 @@ document.getElementById('loginForm').onsubmit = async function(event) {
     console.log('JWT Token:', data.token); // Log the token to the console
     document.getElementById('login').style.display = 'none';
     document.getElementById('upload').style.display = 'block';
+    document.getElementById('logoutButton').style.display = 'block';
     loadUser();
     loadGallery();
     loadUsers();
   } else {
-    alert('Login failed');
+    const error = await response.json();
+    alert('Login failed: ' + error.message);
   }
+};
+
+// Logout Functionality
+document.getElementById('logoutButton').onclick = function() {
+  localStorage.removeItem('token');
+  document.getElementById('upload').style.display = 'none';
+  document.getElementById('login').style.display = 'block';
+  document.getElementById('logoutButton').style.display = 'none';
+  document.getElementById('userInfo').innerText = '';
 };
 
 // Load User Information
@@ -52,9 +64,10 @@ async function loadUser() {
   });
   if (response.ok) {
     const user = await response.json();
-    document.getElementById('user').innerText = `Welcome, ${user.username}`;
+    document.getElementById('userInfo').innerText = `Welcome, ${user.username}`;
   } else {
-    alert('Failed to fetch user information');
+    const error = await response.json();
+    alert('Failed to fetch user information: ' + error.message);
   }
 }
 
@@ -75,7 +88,8 @@ async function loadUsers() {
       usersDiv.appendChild(userDiv);
     });
   } else {
-    alert('Failed to fetch users');
+    const error = await response.json();
+    alert('Failed to fetch users: ' + error.message);
   }
 }
 
@@ -95,7 +109,8 @@ document.getElementById('uploadForm').onsubmit = async function(event) {
     alert('Photo uploaded successfully!');
     loadGallery();
   } else {
-    alert('Failed to upload photo.');
+    const error = await response.json();
+    alert('Failed to upload photo: ' + error.message);
   }
 };
 
@@ -105,13 +120,18 @@ async function loadGallery() {
       'Authorization': 'Bearer ' + localStorage.getItem('token')
     }
   });
-  const photos = await response.json();
-  const gallery = document.getElementById('gallery');
-  gallery.innerHTML = '';
-  photos.forEach(photo => {
-    const img = document.createElement('img');
-    img.src = `http://localhost:3000/uploads/${photo.filename}`;
-    img.alt = photo.originalName;
-    gallery.appendChild(img);
-  });
+  if (response.ok) {
+    const photos = await response.json();
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';
+    photos.forEach(photo => {
+      const img = document.createElement('img');
+      img.src = `http://localhost:3000/uploads/${photo.filename}`;
+      img.alt = photo.originalName;
+      gallery.appendChild(img);
+    });
+  } else {
+    const error = await response.json();
+    alert('Failed to fetch photos: ' + error.message);
+  }
 }
