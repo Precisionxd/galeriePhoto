@@ -18,6 +18,14 @@ document.getElementById('registerForm').onsubmit = async function(event) {
   }
 };
 
+// Home Button Navigation
+document.getElementById('homeButton').onclick = function() {
+  document.getElementById('upload').style.display = 'block';
+  document.getElementById('profile').style.display = 'none';
+  document.getElementById('search').style.display = 'none';
+  loadGallery();
+};
+
 // Login Form
 document.getElementById('loginForm').onsubmit = async function(event) {
   event.preventDefault();
@@ -36,8 +44,10 @@ document.getElementById('loginForm').onsubmit = async function(event) {
     console.log('JWT Token:', data.token); // Log the token to the console
     document.getElementById('login').style.display = 'none';
     document.getElementById('upload').style.display = 'block';
+    document.getElementById('homeButton').style.display = 'block'; // Add this line
     document.getElementById('logoutButton').style.display = 'block';
     document.getElementById('profileButton').style.display = 'block';
+    document.getElementById('searchButton').style.display = 'block';
     loadUser();
     loadGallery();
     loadUsers();
@@ -52,17 +62,28 @@ document.getElementById('logoutButton').onclick = function() {
   localStorage.removeItem('token');
   document.getElementById('upload').style.display = 'none';
   document.getElementById('login').style.display = 'block';
+  document.getElementById('homeButton').style.display = 'none'; // Add this line
   document.getElementById('logoutButton').style.display = 'none';
   document.getElementById('profileButton').style.display = 'none';
+  document.getElementById('searchButton').style.display = 'none';
   document.getElementById('userInfo').innerText = '';
   document.getElementById('profile').style.display = 'none';
+  document.getElementById('search').style.display = 'none';
 };
 
 // Profile Navigation
 document.getElementById('profileButton').onclick = function() {
   document.getElementById('upload').style.display = 'none';
+  document.getElementById('search').style.display = 'none';
   document.getElementById('profile').style.display = 'block';
   loadProfile();
+};
+
+// Search Navigation
+document.getElementById('searchButton').onclick = function() {
+  document.getElementById('upload').style.display = 'none';
+  document.getElementById('profile').style.display = 'none';
+  document.getElementById('search').style.display = 'block';
 };
 
 // Load Profile Information
@@ -90,8 +111,10 @@ document.getElementById('profileForm').onsubmit = async function(event) {
   const username = document.getElementById('profileUsername').value;
   const password = document.getElementById('profilePassword').value;
 
+  let response;
+
   if (username) {
-    const response = await fetch('http://localhost:3000/api/updateProfile', {
+    response = await fetch('http://localhost:3000/api/updateProfile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -109,7 +132,7 @@ document.getElementById('profileForm').onsubmit = async function(event) {
   }
 
   if (password) {
-    const response = await fetch('http://localhost:3000/api/updatePassword', {
+    response = await fetch('http://localhost:3000/api/updatePassword', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -172,8 +195,10 @@ document.getElementById('uploadForm').onsubmit = async function(event) {
   event.preventDefault();
   const token = localStorage.getItem('token');
   const photo = document.getElementById('photo').files[0];
+  const description = document.getElementById('description').value;
   const formData = new FormData();
   formData.append('photo', photo);
+  formData.append('description', description);
   const response = await fetch('http://localhost:3000/api/upload', {
     method: 'POST',
     headers: {
@@ -189,27 +214,35 @@ document.getElementById('uploadForm').onsubmit = async function(event) {
   }
 };
 
-async function loadGallery() {
+async function loadGallery(page = 1) {
   const token = localStorage.getItem('token');
-  const response = await fetch('http://localhost:3000/api/photos', {
+  const response = await fetch(`http://localhost:3000/api/photos?page=${page}`, {
     headers: {
       'Authorization': 'Bearer ' + token
     }
   });
   if (response.ok) {
-    const photos = await response.json();
+    const data = await response.json();
     const gallery = document.getElementById('gallery');
     gallery.innerHTML = '';
-    photos.forEach(photo => {
+    data.photos.forEach(photo => {
       const imgContainer = document.createElement('div');
+      imgContainer.className = 'photo-container';
+      
       const img = document.createElement('img');
       img.src = `http://localhost:3000/uploads/${photo.filename}`;
-      img.alt = photo.originalName;
+      img.alt = photo.description;
       
       const details = document.createElement('div');
-      details.innerText = `Original Name: ${photo.originalName}\nUpload Date: ${new Date(photo.uploadDate).toLocaleString()}`;
+      details.className = 'photo-details';
+      details.innerHTML = `
+        <p>Description: ${photo.description}</p>
+        <p>Original Name: ${photo.originalName}</p>
+        <p>Upload Date: ${new Date(photo.uploadDate).toLocaleString()}</p>
+      `;
       
       const deleteButton = document.createElement('button');
+      deleteButton.className = 'delete-button';
       deleteButton.innerText = 'Delete';
       deleteButton.onclick = async () => {
         const deleteResponse = await fetch(`http://localhost:3000/api/photos/${photo._id}`, {
@@ -220,17 +253,125 @@ async function loadGallery() {
         });
         if (deleteResponse.ok) {
           alert('Photo deleted successfully');
-          loadGallery();
+          loadGallery(page);
         } else {
           alert('Failed to delete photo');
         }
       };
+      
+      details.appendChild(deleteButton);
+      
+      // Comments Section
+      const commentsDiv = document.createElement('div');
+      commentsDiv.className = 'comments';
+      
+      const commentForm = document.createElement('form');
+      commentForm.className = 'comment-form';
+      commentForm.innerHTML = `
+        <input type="text" class="comment-input" placeholder="Add a comment">
+        <button type="submit" class="comment-submit">Comment</button>
+      `;
+      commentForm.onsubmit = async function(event) {
+        event.preventDefault();
+        const commentInput = commentForm.querySelector('.comment-input').value;
+        const response = await fetch(`http://localhost:3000/api/photos/${photo._id}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ comment: commentInput })
+        });
+        if (response.ok) {
+          alert('Comment added successfully');
+          loadComments(photo._id, commentsDiv);
+        } else {
+          alert('Failed to add comment');
+        }
+      };
+      
+      commentsDiv.appendChild(commentForm);
+      
+      const commentList = document.createElement('div');
+      commentList.className = 'comment-list';
+      commentsDiv.appendChild(commentList);
+      
+      details.appendChild(commentsDiv);
       imgContainer.appendChild(img);
       imgContainer.appendChild(details);
-      imgContainer.appendChild(deleteButton);
       gallery.appendChild(imgContainer);
+      
+      loadComments(photo._id, commentsDiv);
     });
+    
+    // Pagination
+    const pagination = document.createElement('div');
+    pagination.classList.add('pagination');
+    for (let i = 1; i <= data.totalPages; i++) {
+      const pageLink = document.createElement('button');
+      pageLink.innerText = i;
+      if (i === parseInt(data.currentPage)) {
+        pageLink.classList.add('active');
+      }
+      pageLink.onclick = () => loadGallery(i);
+      pagination.appendChild(pageLink);
+    }
+    gallery.appendChild(pagination);
   } else {
     alert('Failed to fetch photos: ' + response.statusText);
   }
 }
+
+async function loadComments(photoId, commentsDiv) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`http://localhost:3000/api/photos/${photoId}/comments`, {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (response.ok) {
+    const comments = await response.json();
+    const commentList = commentsDiv.querySelector('.comment-list');
+    commentList.innerHTML = '';
+    comments.forEach(comment => {
+      const commentDiv = document.createElement('div');
+      commentDiv.className = 'comment';
+      commentDiv.innerText = `${comment.comment} - ${new Date(comment.date).toLocaleString()}`;
+      commentList.appendChild(commentDiv);
+    });
+  } else {
+    alert('Failed to fetch comments: ' + response.statusText);
+  }
+}
+
+// Search Form
+document.getElementById('searchForm').onsubmit = async function(event) {
+  event.preventDefault();
+  const token = localStorage.getItem('token');
+  const query = document.getElementById('searchQuery').value;
+  const response = await fetch(`http://localhost:3000/api/search?query=${query}`, {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (response.ok) {
+    const photos = await response.json();
+    const searchResults = document.getElementById('searchResults');
+    searchResults.innerHTML = '';
+    photos.forEach(photo => {
+      const imgContainer = document.createElement('div');
+      const img = document.createElement('img');
+      img.src = `http://localhost:3000/uploads/${photo.filename}`;
+      img.alt = photo.originalName;
+      
+      const details = document.createElement('div');
+      details.innerText = `Description: ${photo.description}\nOriginal Name: ${photo.originalName}\nUpload Date: ${new Date(photo.uploadDate).toLocaleString()}`;
+      
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(details);
+      searchResults.appendChild(imgContainer);
+    });
+  } else {
+    alert('Failed to search photos: ' + response.statusText);
+  }
+};
