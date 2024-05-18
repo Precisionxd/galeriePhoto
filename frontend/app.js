@@ -198,45 +198,23 @@ async function loadProfilePicture() {
       },
     }
   );
+
   if (response.ok) {
+    const blob = await response.blob();
+    const objectURL = URL.createObjectURL(blob);
+
     const profilePictureImg = document.getElementById("profilePictureImg");
-    profilePictureImg.src = response.url;
+    profilePictureImg.src = objectURL;
     profilePictureImg.style.display = "block";
 
     // Update the displayed profile picture above the home button
     const profilePictureDisplay = document.getElementById(
       "profilePictureDisplay"
     );
-    profilePictureDisplay.src = response.url;
+    profilePictureDisplay.src = objectURL;
     profilePictureDisplay.style.display = "block";
   } else {
     alert("Failed to fetch profile picture: " + response.statusText);
-  }
-}
-
-// Load User Information
-async function loadUser() {
-  const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:3000/api/user", {
-    headers: {
-      Authorization: "Bearer " + token,
-    },
-  });
-  if (response.ok) {
-    const user = await response.json();
-    document.getElementById("userInfo").innerText = `Welcome, ${user.username}`;
-    // Display the profile picture
-    const profilePictureDisplay = document.getElementById(
-      "profilePictureDisplay"
-    );
-    profilePictureDisplay.src =
-      user.profilePicture && user.profilePicture !== "cat1.png"
-        ? `http://localhost:3000/uploads/${user.profilePicture}`
-        : `http://localhost:3000/uploads/defaultProfilePicture`;
-    profilePictureDisplay.style.display = "block";
-  } else {
-    const error = await response.json();
-    alert("Failed to fetch user information: " + error.message);
   }
 }
 
