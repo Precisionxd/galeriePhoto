@@ -154,6 +154,40 @@ app.get('/api/photos', verifyToken, async (req, res) => {
   }
 });
 
+// Update User Profile
+app.post('/api/updateProfile', verifyToken, async (req, res) => {
+  const { username } = req.body;
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    user.username = username;
+    await user.save();
+    res.status(200).send('Profile updated successfully');
+  } catch (error) {
+    res.status(500).send('Error updating profile');
+  }
+});
+
+// Delete Photo
+app.delete('/api/photos/:id', verifyToken, async (req, res) => {
+  try {
+    const photo = await Photo.findById(req.params.id);
+    if (!photo) {
+      return res.status(404).send('Photo not found');
+    }
+    if (photo.userId !== req.user.id) {
+      return res.status(403).send('Unauthorized');
+    }
+    await photo.remove();
+    res.status(200).send('Photo deleted successfully');
+  } catch (error) {
+    res.status(500).send('Error deleting photo');
+  }
+});
+
+
 // Serve frontend files
 app.use(express.static(path.join(__dirname, 'frontend')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

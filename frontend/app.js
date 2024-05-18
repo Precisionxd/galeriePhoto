@@ -75,18 +75,39 @@ async function loadProfile() {
   });
   if (response.ok) {
     const user = await response.json();
-    document.getElementById('profileUsername').value = user.username;
+    document.getElementById('profileUsername').placeholder = 'New Username';
+    document.getElementById('profilePassword').placeholder = 'New Password';
   } else {
     const error = await response.json();
     alert('Failed to fetch profile information: ' + error.message);
   }
 }
 
-// Profile Form (Update Password)
+// Profile Form (Update Username and Password)
 document.getElementById('profileForm').onsubmit = async function(event) {
   event.preventDefault();
   const token = localStorage.getItem('token');
+  const username = document.getElementById('profileUsername').value;
   const password = document.getElementById('profilePassword').value;
+
+  if (username) {
+    const response = await fetch('http://localhost:3000/api/updateProfile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ username })
+    });
+    if (response.ok) {
+      alert('Username updated successfully');
+      document.getElementById('userInfo').innerText = `Welcome, ${username}`;
+    } else {
+      const error = await response.json();
+      alert('Failed to update username: ' + error.message);
+    }
+  }
+
   if (password) {
     const response = await fetch('http://localhost:3000/api/updatePassword', {
       method: 'POST',
@@ -103,8 +124,6 @@ document.getElementById('profileForm').onsubmit = async function(event) {
       const error = await response.json();
       alert('Failed to update password: ' + error.message);
     }
-  } else {
-    alert('Please enter a new password');
   }
 };
 
@@ -182,10 +201,34 @@ async function loadGallery() {
     const gallery = document.getElementById('gallery');
     gallery.innerHTML = '';
     photos.forEach(photo => {
+      const imgContainer = document.createElement('div');
       const img = document.createElement('img');
       img.src = `http://localhost:3000/uploads/${photo.filename}`;
       img.alt = photo.originalName;
-      gallery.appendChild(img);
+      
+      const details = document.createElement('div');
+      details.innerText = `Original Name: ${photo.originalName}\nUpload Date: ${new Date(photo.uploadDate).toLocaleString()}`;
+      
+      const deleteButton = document.createElement('button');
+      deleteButton.innerText = 'Delete';
+      deleteButton.onclick = async () => {
+        const deleteResponse = await fetch(`http://localhost:3000/api/photos/${photo._id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        if (deleteResponse.ok) {
+          alert('Photo deleted successfully');
+          loadGallery();
+        } else {
+          alert('Failed to delete photo');
+        }
+      };
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(details);
+      imgContainer.appendChild(deleteButton);
+      gallery.appendChild(imgContainer);
     });
   } else {
     alert('Failed to fetch photos: ' + response.statusText);
