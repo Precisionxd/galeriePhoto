@@ -27,18 +27,21 @@ mongoose
     console.error("Error connecting to MongoDB", err);
   });
 
+// Default profile picture path
+const defaultProfilePicture = "cat1.png";
+
 // User Schema and Model
 const UserSchema = new mongoose.Schema({
-  username: String,
-  password: String,
-  profilePicture: String, // Added profilePicture field
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  profilePicture: { type: String, default: defaultProfilePicture },
 });
 
 const User = mongoose.model("User", UserSchema);
 
 // Photo Schema and Model
 const PhotoSchema = new mongoose.Schema({
-  userId: String,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   filename: String,
   originalName: String,
   uploadDate: Date,
@@ -208,7 +211,7 @@ app.delete("/api/photos/:id", verifyToken, async (req, res) => {
     if (!photo) {
       return res.status(404).send("Photo not found");
     }
-    if (photo.userId !== req.user.id) {
+    if (photo.userId.toString() !== req.user.id) {
       return res.status(403).send("Unauthorized");
     }
     await photo.remove();
@@ -277,7 +280,7 @@ const LikeSchema = new mongoose.Schema({
 
 const Like = mongoose.model("Like", LikeSchema);
 
-// Like Photo
+/// Like Photo
 app.post("/api/photos/:id/like", verifyToken, async (req, res) => {
   const newLike = new Like({
     photoId: req.params.id,
@@ -301,6 +304,20 @@ app.get("/api/photos/:id/likes", verifyToken, async (req, res) => {
   }
 });
 
+// Get Profile Picture
+app.get("/api/user/profilePicture", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const profilePicturePath =
+      user.profilePicture && user.profilePicture !== defaultProfilePicture
+        ? path.join(__dirname, "uploads", user.profilePicture)
+        : path.join(__dirname, defaultProfilePicture);
+    res.sendFile(profilePicturePath);
+  } catch (error) {
+    res.status(500).send("Error fetching profile picture");
+  }
+});
+
 // Add Profile Picture to User
 app.post(
   "/api/user/profilePicture",
@@ -309,6 +326,9 @@ app.post(
   async (req, res) => {
     try {
       const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
       user.profilePicture = req.file.filename;
       await user.save();
       res.status(200).send("Profile picture updated successfully");
@@ -318,19 +338,14 @@ app.post(
   }
 );
 
-// Get Profile Picture
-app.get("/api/user/profilePicture", verifyToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    res.sendFile(path.join(__dirname, "uploads", user.profilePicture));
-  } catch (error) {
-    res.status(500).send("Error fetching profile picture");
-  }
-});
-
 // Serve frontend files
 app.use(express.static(path.join(__dirname, "frontend")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Serve default profile picture
+app.get("/uploads/defaultProfilePicture", (req, res) => {
+  res.sendFile(path.join(__dirname, "cat1.png"));
+});
 
 // Start Server
 app.listen(3000, () => console.log("Server started on port 3000"));

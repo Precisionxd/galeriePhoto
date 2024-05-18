@@ -59,6 +59,7 @@ document.getElementById("logoutButton").onclick = function () {
   document.getElementById("profileButton").style.display = "none";
   document.getElementById("searchButton").style.display = "none";
   document.getElementById("userInfo").innerText = "";
+  document.getElementById("profilePictureDisplay").style.display = "none";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
 };
@@ -68,6 +69,7 @@ document.getElementById("homeButton").onclick = function () {
   document.getElementById("upload").style.display = "block";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
+  loadUser(); // Make sure to reload the user information
   loadGallery();
 };
 
@@ -77,7 +79,7 @@ document.getElementById("profileButton").onclick = function () {
   document.getElementById("search").style.display = "none";
   document.getElementById("profile").style.display = "block";
   loadProfile();
-  loadProfilePicture();
+  loadProfilePicture(); // Ensure profile picture is loaded
 };
 
 // Search Navigation
@@ -85,6 +87,7 @@ document.getElementById("searchButton").onclick = function () {
   document.getElementById("upload").style.display = "none";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "block";
+  loadProfilePicture(); // Ensure profile picture is loaded
 };
 
 // Load Profile Information
@@ -99,6 +102,12 @@ async function loadProfile() {
     const user = await response.json();
     document.getElementById("profileUsername").placeholder = "New Username";
     document.getElementById("profilePassword").placeholder = "New Password";
+    const profilePictureImg = document.getElementById("profilePictureImg");
+    profilePictureImg.src =
+      user.profilePicture && user.profilePicture !== "cat1.png"
+        ? `http://localhost:3000/uploads/${user.profilePicture}`
+        : `http://localhost:3000/uploads/defaultProfilePicture`;
+    profilePictureImg.style.display = "block";
   } else {
     const error = await response.json();
     alert("Failed to fetch profile information: " + error.message);
@@ -178,6 +187,7 @@ document.getElementById("profilePictureForm").onsubmit = async function (
   }
 };
 
+// Load Profile Picture
 async function loadProfilePicture() {
   const token = localStorage.getItem("token");
   const response = await fetch(
@@ -192,6 +202,13 @@ async function loadProfilePicture() {
     const profilePictureImg = document.getElementById("profilePictureImg");
     profilePictureImg.src = response.url;
     profilePictureImg.style.display = "block";
+
+    // Update the displayed profile picture above the home button
+    const profilePictureDisplay = document.getElementById(
+      "profilePictureDisplay"
+    );
+    profilePictureDisplay.src = response.url;
+    profilePictureDisplay.style.display = "block";
   } else {
     alert("Failed to fetch profile picture: " + response.statusText);
   }
@@ -208,32 +225,44 @@ async function loadUser() {
   if (response.ok) {
     const user = await response.json();
     document.getElementById("userInfo").innerText = `Welcome, ${user.username}`;
+    // Display the profile picture
+    const profilePictureDisplay = document.getElementById(
+      "profilePictureDisplay"
+    );
+    profilePictureDisplay.src =
+      user.profilePicture && user.profilePicture !== "cat1.png"
+        ? `http://localhost:3000/uploads/${user.profilePicture}`
+        : `http://localhost:3000/uploads/defaultProfilePicture`;
+    profilePictureDisplay.style.display = "block";
   } else {
     const error = await response.json();
     alert("Failed to fetch user information: " + error.message);
   }
 }
 
-// Load All Users
-async function loadUsers() {
+// Load User Information
+async function loadUser() {
   const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:3000/api/users", {
+  const response = await fetch("http://localhost:3000/api/user", {
     headers: {
       Authorization: "Bearer " + token,
     },
   });
   if (response.ok) {
-    const users = await response.json();
-    const usersDiv = document.getElementById("users");
-    usersDiv.innerHTML = "";
-    users.forEach((user) => {
-      const userDiv = document.createElement("div");
-      userDiv.innerText = user.username;
-      usersDiv.appendChild(userDiv);
-    });
+    const user = await response.json();
+    document.getElementById("userInfo").innerText = `Welcome, ${user.username}`;
+    // Display the profile picture
+    const profilePictureDisplay = document.getElementById(
+      "profilePictureDisplay"
+    );
+    profilePictureDisplay.src =
+      user.profilePicture && user.profilePicture !== "cat1.png"
+        ? `http://localhost:3000/uploads/${user.profilePicture}`
+        : `http://localhost:3000/uploads/defaultProfilePicture`;
+    profilePictureDisplay.style.display = "block";
   } else {
     const error = await response.json();
-    alert("Failed to fetch users: " + error.message);
+    alert("Failed to fetch user information: " + error.message);
   }
 }
 
