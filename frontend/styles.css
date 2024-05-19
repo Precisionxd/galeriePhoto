@@ -302,3 +302,36 @@ body.dark-mode .photo-container {
   padding: 10px;
   border-radius: 5px;
 }
+
+body.dark-mode #uploadForm,
+body.dark-mode #searchForm {
+  background-color: #1e1e1e;
+  border-color: #333333;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode #uploadForm input,
+body.dark-mode #searchForm input {
+  background-color: #333333;
+  color: #ffffff;
+  border: 1px solid #444444;
+}
+
+body.dark-mode #uploadForm button,
+body.dark-mode #searchForm button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+}
+
+body.dark-mode #uploadForm button:hover,
+body.dark-mode #searchForm button:hover {
+  background-color: #45a049;
+}
+
+body.dark-mode #gallery div,
+body.dark-mode #searchResults div {
+  background-color: #1e1e1e;
+  border-color: #333333;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
