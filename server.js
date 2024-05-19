@@ -206,20 +206,11 @@ app.post(
   }
 );
 
-// Get User's Photos with Pagination
+/// Get User's Photos without Pagination
 app.get("/api/photos", verifyToken, async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
   try {
-    const photos = await Photo.find({ userId: req.user.id })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-    const count = await Photo.countDocuments({ userId: req.user.id });
-    res.json({
-      photos,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
-    });
+    const photos = await Photo.find({ userId: req.user.id });
+    res.json(photos);
   } catch (error) {
     res.status(500).send("Error fetching photos");
   }

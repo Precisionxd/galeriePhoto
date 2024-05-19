@@ -17,7 +17,7 @@
   </head>
   <body>
     <nav aria-label="Main Navigation">
-      <button id="homeNavButton" style="display: none">Home</button>
+      <button id="homeNavButton">Home</button>
       <button id="profileNavButton" style="display: none">Profile</button>
       <button id="uploadNavButton" style="display: none">Upload</button>
       <button id="searchNavButton" style="display: none">Search</button>
@@ -26,6 +26,14 @@
       <button id="toggleDarkMode">Toggle Dark Mode</button>
     </nav>
     <h1>Photo Gallery</h1>
+    <div id="homeMenu">
+      <h2>Welcome to Photo Gallery!</h2>
+      <p>
+        Use the menu to navigate through different sections of the website. You
+        can upload photos, manage your profile, search for photos, and learn
+        more about us.
+      </p>
+    </div>
     <div id="user">
       <img
         id="profilePictureDisplay"
@@ -95,12 +103,6 @@
         <input type="file" id="profilePicture" name="profilePicture" required />
         <button type="submit">Upload</button>
       </form>
-      <img
-        id="profilePictureImg"
-        src=""
-        alt="Profile Picture"
-        style="display: none"
-      />
     </div>
     <div id="search" style="display: none">
       <h2>Search Photos</h2>

@@ -34,6 +34,7 @@ document.getElementById("loginForm").onsubmit = async function (event) {
     console.log("JWT Token:", data.token); // Log the token to the console
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none"; // Hide the register section
+    document.getElementById("homeMenu").style.display = "none"; // Hide the home menu
     document.getElementById("upload").style.display = "block";
     document.getElementById("homeNavButton").style.display = "block";
     document.getElementById("profileNavButton").style.display = "block";
@@ -53,7 +54,6 @@ document.getElementById("logoutNavButton").onclick = function () {
   document.getElementById("upload").style.display = "none";
   document.getElementById("login").style.display = "block";
   document.getElementById("register").style.display = "block"; // Show the register section
-  document.getElementById("homeNavButton").style.display = "none";
   document.getElementById("profileNavButton").style.display = "none";
   document.getElementById("uploadNavButton").style.display = "none";
   document.getElementById("searchNavButton").style.display = "none";
@@ -62,15 +62,15 @@ document.getElementById("logoutNavButton").onclick = function () {
   document.getElementById("profilePictureDisplay").style.display = "none";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
+  document.getElementById("homeMenu").style.display = "block"; // Show the home menu
 };
 
 document.getElementById("homeNavButton").onclick = function () {
-  document.getElementById("upload").style.display = "block";
+  document.getElementById("upload").style.display = "none";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
   document.getElementById("about").style.display = "none";
-  loadUser(); // Make sure to reload the user information
-  loadGallery();
+  document.getElementById("homeMenu").style.display = "block";
 };
 
 document.getElementById("profileNavButton").onclick = function () {
@@ -78,6 +78,7 @@ document.getElementById("profileNavButton").onclick = function () {
   document.getElementById("search").style.display = "none";
   document.getElementById("profile").style.display = "block";
   document.getElementById("about").style.display = "none";
+  document.getElementById("homeMenu").style.display = "none";
   loadProfile();
   loadProfilePicture(); // Ensure profile picture is loaded
 };
@@ -87,6 +88,7 @@ document.getElementById("uploadNavButton").onclick = function () {
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
   document.getElementById("about").style.display = "none";
+  document.getElementById("homeMenu").style.display = "none";
   loadGallery();
 };
 
@@ -95,6 +97,7 @@ document.getElementById("searchNavButton").onclick = function () {
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "block";
   document.getElementById("about").style.display = "none";
+  document.getElementById("homeMenu").style.display = "none";
 };
 
 document.getElementById("aboutNavButton").onclick = function () {
@@ -102,6 +105,7 @@ document.getElementById("aboutNavButton").onclick = function () {
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
   document.getElementById("about").style.display = "block";
+  document.getElementById("homeMenu").style.display = "none";
 };
 
 document.getElementById("profileForm").onsubmit = async function (event) {
@@ -247,12 +251,6 @@ async function loadProfile() {
     const user = await response.json();
     document.getElementById("profileUsername").placeholder = "New Username";
     document.getElementById("profilePassword").placeholder = "New Password";
-    const profilePictureImg = document.getElementById("profilePictureImg");
-    profilePictureImg.src =
-      user.profilePicture && user.profilePicture !== "cat1.png"
-        ? `http://localhost:3000/uploads/${user.profilePicture}`
-        : `http://localhost:3000/uploads/defaultProfilePicture`;
-    profilePictureImg.style.display = "block";
   } else {
     const error = await response.json();
     alert("Failed to fetch profile information: " + error.message);
@@ -272,10 +270,6 @@ async function loadProfilePicture() {
   if (response.ok) {
     const blob = await response.blob();
     const objectURL = URL.createObjectURL(blob);
-
-    const profilePictureImg = document.getElementById("profilePictureImg");
-    profilePictureImg.src = objectURL;
-    profilePictureImg.style.display = "block";
 
     const profilePictureDisplay = document.getElementById(
       "profilePictureDisplay"
@@ -311,21 +305,18 @@ async function loadUser() {
   }
 }
 
-async function loadGallery(page = 1) {
+async function loadGallery() {
   const token = localStorage.getItem("token");
-  const response = await fetch(
-    `http://localhost:3000/api/photos?page=${page}`,
-    {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
+  const response = await fetch("http://localhost:3000/api/photos", {
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  });
   if (response.ok) {
-    const data = await response.json();
+    const photos = await response.json();
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
-    data.photos.forEach((photo) => {
+    photos.forEach((photo) => {
       const imgContainer = document.createElement("div");
       imgContainer.className = "photo-container";
 
@@ -356,7 +347,7 @@ async function loadGallery(page = 1) {
         );
         if (deleteResponse.ok) {
           alert("Photo deleted successfully");
-          loadGallery(page);
+          loadGallery();
         } else {
           alert("Failed to delete photo");
         }
@@ -439,19 +430,6 @@ async function loadGallery(page = 1) {
       loadComments(photo._id, commentsDiv);
       loadLikes(photo._id, likesDiv);
     });
-
-    const pagination = document.createElement("div");
-    pagination.classList.add("pagination");
-    for (let i = 1; i <= data.totalPages; i++) {
-      const pageLink = document.createElement("button");
-      pageLink.innerText = i;
-      if (i === parseInt(data.currentPage)) {
-        pageLink.classList.add("active");
-      }
-      pageLink.onclick = () => loadGallery(i);
-      pagination.appendChild(pageLink);
-    }
-    gallery.appendChild(pagination);
   } else {
     alert("Failed to fetch photos: " + response.statusText);
   }
