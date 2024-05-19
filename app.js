@@ -31,7 +31,6 @@ document.getElementById("loginForm").onsubmit = async function (event) {
   if (response.ok) {
     const data = await response.json();
     localStorage.setItem("token", data.token);
-    console.log("JWT Token:", data.token); // Log the token to the console
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none"; // Hide the register section
     document.getElementById("homeMenu").style.display = "none"; // Hide the home menu
