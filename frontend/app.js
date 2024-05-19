@@ -1,4 +1,3 @@
-// Registration Form
 document.getElementById("registerForm").onsubmit = async function (event) {
   event.preventDefault();
   const username = document.getElementById("regUsername").value;
@@ -18,7 +17,6 @@ document.getElementById("registerForm").onsubmit = async function (event) {
   }
 };
 
-// Login Form
 document.getElementById("loginForm").onsubmit = async function (event) {
   event.preventDefault();
   const username = document.getElementById("username").value;
@@ -35,86 +33,77 @@ document.getElementById("loginForm").onsubmit = async function (event) {
     localStorage.setItem("token", data.token);
     console.log("JWT Token:", data.token); // Log the token to the console
     document.getElementById("login").style.display = "none";
+    document.getElementById("register").style.display = "none"; // Hide the register section
     document.getElementById("upload").style.display = "block";
-    document.getElementById("homeButton").style.display = "block";
-    document.getElementById("logoutButton").style.display = "block";
-    document.getElementById("profileButton").style.display = "block";
-    document.getElementById("searchButton").style.display = "block";
+    document.getElementById("homeNavButton").style.display = "block";
+    document.getElementById("profileNavButton").style.display = "block";
+    document.getElementById("uploadNavButton").style.display = "block";
+    document.getElementById("searchNavButton").style.display = "block";
+    document.getElementById("logoutNavButton").style.display = "block";
     loadUser();
     loadGallery();
-    loadUsers();
   } else {
     const error = await response.json();
     alert("Login failed: " + error.message);
   }
 };
 
-// Logout Functionality
-document.getElementById("logoutButton").onclick = function () {
+document.getElementById("logoutNavButton").onclick = function () {
   localStorage.removeItem("token");
   document.getElementById("upload").style.display = "none";
   document.getElementById("login").style.display = "block";
-  document.getElementById("homeButton").style.display = "none";
-  document.getElementById("logoutButton").style.display = "none";
-  document.getElementById("profileButton").style.display = "none";
-  document.getElementById("searchButton").style.display = "none";
+  document.getElementById("register").style.display = "block"; // Show the register section
+  document.getElementById("homeNavButton").style.display = "none";
+  document.getElementById("profileNavButton").style.display = "none";
+  document.getElementById("uploadNavButton").style.display = "none";
+  document.getElementById("searchNavButton").style.display = "none";
+  document.getElementById("logoutNavButton").style.display = "none";
   document.getElementById("userInfo").innerText = "";
   document.getElementById("profilePictureDisplay").style.display = "none";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
 };
 
-// Home Button Navigation
-document.getElementById("homeButton").onclick = function () {
+document.getElementById("homeNavButton").onclick = function () {
   document.getElementById("upload").style.display = "block";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
+  document.getElementById("about").style.display = "none";
   loadUser(); // Make sure to reload the user information
   loadGallery();
 };
 
-// Profile Navigation
-document.getElementById("profileButton").onclick = function () {
+document.getElementById("profileNavButton").onclick = function () {
   document.getElementById("upload").style.display = "none";
   document.getElementById("search").style.display = "none";
   document.getElementById("profile").style.display = "block";
+  document.getElementById("about").style.display = "none";
   loadProfile();
   loadProfilePicture(); // Ensure profile picture is loaded
 };
 
-// Search Navigation
-document.getElementById("searchButton").onclick = function () {
+document.getElementById("uploadNavButton").onclick = function () {
+  document.getElementById("upload").style.display = "block";
+  document.getElementById("profile").style.display = "none";
+  document.getElementById("search").style.display = "none";
+  document.getElementById("about").style.display = "none";
+  loadGallery();
+};
+
+document.getElementById("searchNavButton").onclick = function () {
   document.getElementById("upload").style.display = "none";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "block";
-  loadProfilePicture(); // Ensure profile picture is loaded
+  document.getElementById("about").style.display = "none";
 };
 
-// Load Profile Information
-async function loadProfile() {
-  const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:3000/api/user", {
-    headers: {
-      Authorization: "Bearer " + token,
-    },
-  });
-  if (response.ok) {
-    const user = await response.json();
-    document.getElementById("profileUsername").placeholder = "New Username";
-    document.getElementById("profilePassword").placeholder = "New Password";
-    const profilePictureImg = document.getElementById("profilePictureImg");
-    profilePictureImg.src =
-      user.profilePicture && user.profilePicture !== "cat1.png"
-        ? `http://localhost:3000/uploads/${user.profilePicture}`
-        : `http://localhost:3000/uploads/defaultProfilePicture`;
-    profilePictureImg.style.display = "block";
-  } else {
-    const error = await response.json();
-    alert("Failed to fetch profile information: " + error.message);
-  }
-}
+document.getElementById("aboutNavButton").onclick = function () {
+  document.getElementById("upload").style.display = "none";
+  document.getElementById("profile").style.display = "none";
+  document.getElementById("search").style.display = "none";
+  document.getElementById("about").style.display = "block";
+};
 
-// Profile Form (Update Username and Password)
 document.getElementById("profileForm").onsubmit = async function (event) {
   event.preventDefault();
   const token = localStorage.getItem("token");
@@ -160,7 +149,6 @@ document.getElementById("profileForm").onsubmit = async function (event) {
   }
 };
 
-// Profile Picture Form
 document.getElementById("profilePictureForm").onsubmit = async function (
   event
 ) {
@@ -187,64 +175,6 @@ document.getElementById("profilePictureForm").onsubmit = async function (
   }
 };
 
-// Load Profile Picture
-async function loadProfilePicture() {
-  const token = localStorage.getItem("token");
-  const response = await fetch(
-    "http://localhost:3000/api/user/profilePicture",
-    {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-
-  if (response.ok) {
-    const blob = await response.blob();
-    const objectURL = URL.createObjectURL(blob);
-
-    const profilePictureImg = document.getElementById("profilePictureImg");
-    profilePictureImg.src = objectURL;
-    profilePictureImg.style.display = "block";
-
-    // Update the displayed profile picture above the home button
-    const profilePictureDisplay = document.getElementById(
-      "profilePictureDisplay"
-    );
-    profilePictureDisplay.src = objectURL;
-    profilePictureDisplay.style.display = "block";
-  } else {
-    alert("Failed to fetch profile picture: " + response.statusText);
-  }
-}
-
-// Load User Information
-async function loadUser() {
-  const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:3000/api/user", {
-    headers: {
-      Authorization: "Bearer " + token,
-    },
-  });
-  if (response.ok) {
-    const user = await response.json();
-    document.getElementById("userInfo").innerText = `Welcome, ${user.username}`;
-    // Display the profile picture
-    const profilePictureDisplay = document.getElementById(
-      "profilePictureDisplay"
-    );
-    profilePictureDisplay.src =
-      user.profilePicture && user.profilePicture !== "cat1.png"
-        ? `http://localhost:3000/uploads/${user.profilePicture}`
-        : `http://localhost:3000/uploads/defaultProfilePicture`;
-    profilePictureDisplay.style.display = "block";
-  } else {
-    const error = await response.json();
-    alert("Failed to fetch user information: " + error.message);
-  }
-}
-
-// Upload Photo Form
 document.getElementById("uploadForm").onsubmit = async function (event) {
   event.preventDefault();
   const token = localStorage.getItem("token");
@@ -268,7 +198,119 @@ document.getElementById("uploadForm").onsubmit = async function (event) {
   }
 };
 
-// Load User's Photos with Pagination, Comments, and Likes
+document.getElementById("searchForm").onsubmit = async function (event) {
+  event.preventDefault();
+  const token = localStorage.getItem("token");
+  const query = document.getElementById("searchQuery").value;
+  const response = await fetch(
+    `http://localhost:3000/api/search?query=${query}`,
+    {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    }
+  );
+  if (response.ok) {
+    const photos = await response.json();
+    const searchResults = document.getElementById("searchResults");
+    searchResults.innerHTML = "";
+    photos.forEach((photo) => {
+      const imgContainer = document.createElement("div");
+      imgContainer.className = "photo-container";
+
+      const img = document.createElement("img");
+      img.src = `http://localhost:3000/uploads/${photo.filename}`;
+      img.alt = photo.originalName;
+
+      const details = document.createElement("div");
+      details.innerHTML = `Description: ${photo.description}\nOriginal Name: ${
+        photo.originalName
+      }\nUpload Date: ${new Date(photo.uploadDate).toLocaleString()}`;
+
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(details);
+      searchResults.appendChild(imgContainer);
+    });
+  } else {
+    alert("Failed to search photos: " + response.statusText);
+  }
+};
+
+async function loadProfile() {
+  const token = localStorage.getItem("token");
+  const response = await fetch("http://localhost:3000/api/user", {
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  });
+  if (response.ok) {
+    const user = await response.json();
+    document.getElementById("profileUsername").placeholder = "New Username";
+    document.getElementById("profilePassword").placeholder = "New Password";
+    const profilePictureImg = document.getElementById("profilePictureImg");
+    profilePictureImg.src =
+      user.profilePicture && user.profilePicture !== "cat1.png"
+        ? `http://localhost:3000/uploads/${user.profilePicture}`
+        : `http://localhost:3000/uploads/defaultProfilePicture`;
+    profilePictureImg.style.display = "block";
+  } else {
+    const error = await response.json();
+    alert("Failed to fetch profile information: " + error.message);
+  }
+}
+
+async function loadProfilePicture() {
+  const token = localStorage.getItem("token");
+  const response = await fetch(
+    "http://localhost:3000/api/user/profilePicture",
+    {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    }
+  );
+  if (response.ok) {
+    const blob = await response.blob();
+    const objectURL = URL.createObjectURL(blob);
+
+    const profilePictureImg = document.getElementById("profilePictureImg");
+    profilePictureImg.src = objectURL;
+    profilePictureImg.style.display = "block";
+
+    const profilePictureDisplay = document.getElementById(
+      "profilePictureDisplay"
+    );
+    profilePictureDisplay.src = objectURL;
+    profilePictureDisplay.style.display = "block";
+  } else {
+    alert("Failed to fetch profile picture: " + response.statusText);
+  }
+}
+
+async function loadUser() {
+  const token = localStorage.getItem("token");
+  const response = await fetch("http://localhost:3000/api/user", {
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  });
+  if (response.ok) {
+    const user = await response.json();
+    document.getElementById("userInfo").innerText = `Welcome, ${user.username}`;
+    const profilePictureDisplay = document.getElementById(
+      "profilePictureDisplay"
+    );
+    profilePictureDisplay.src =
+      user.profilePicture && user.profilePicture !== "cat1.png"
+        ? `http://localhost:3000/uploads/${user.profilePicture}`
+        : `http://localhost:3000/uploads/defaultProfilePicture`;
+    profilePictureDisplay.style.display = "block";
+  } else {
+    const error = await response.json();
+    alert("Failed to fetch user information: " + error.message);
+  }
+}
+
 async function loadGallery(page = 1) {
   const token = localStorage.getItem("token");
   const response = await fetch(
@@ -322,7 +364,6 @@ async function loadGallery(page = 1) {
 
       details.appendChild(deleteButton);
 
-      // Likes Section
       const likesDiv = document.createElement("div");
       likesDiv.className = "likes";
 
@@ -353,7 +394,6 @@ async function loadGallery(page = 1) {
       likesDiv.appendChild(likeCount);
       details.appendChild(likesDiv);
 
-      // Comments Section
       const commentsDiv = document.createElement("div");
       commentsDiv.className = "comments";
 
@@ -400,7 +440,6 @@ async function loadGallery(page = 1) {
       loadLikes(photo._id, likesDiv);
     });
 
-    // Pagination
     const pagination = document.createElement("div");
     pagination.classList.add("pagination");
     for (let i = 1; i <= data.totalPages; i++) {
@@ -418,7 +457,6 @@ async function loadGallery(page = 1) {
   }
 }
 
-// Load Likes for a Photo
 async function loadLikes(photoId, likesDiv) {
   const token = localStorage.getItem("token");
   const response = await fetch(
@@ -438,7 +476,6 @@ async function loadLikes(photoId, likesDiv) {
   }
 }
 
-// Load Comments for a Photo
 async function loadComments(photoId, commentsDiv) {
   const token = localStorage.getItem("token");
   const response = await fetch(
@@ -466,41 +503,6 @@ async function loadComments(photoId, commentsDiv) {
   }
 }
 
-// Search Form
-document.getElementById("searchForm").onsubmit = async function (event) {
-  event.preventDefault();
-  const token = localStorage.getItem("token");
-  const query = document.getElementById("searchQuery").value;
-  const response = await fetch(
-    `http://localhost:3000/api/search?query=${query}`,
-    {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-  if (response.ok) {
-    const photos = await response.json();
-    const searchResults = document.getElementById("searchResults");
-    searchResults.innerHTML = "";
-    photos.forEach((photo) => {
-      const imgContainer = document.createElement("div");
-      imgContainer.className = "photo-container";
-
-      const img = document.createElement("img");
-      img.src = `http://localhost:3000/uploads/${photo.filename}`;
-      img.alt = photo.originalName;
-
-      const details = document.createElement("div");
-      details.innerHTML = `Description: ${photo.description}\nOriginal Name: ${
-        photo.originalName
-      }\nUpload Date: ${new Date(photo.uploadDate).toLocaleString()}`;
-
-      imgContainer.appendChild(img);
-      imgContainer.appendChild(details);
-      searchResults.appendChild(imgContainer);
-    });
-  } else {
-    alert("Failed to search photos: " + response.statusText);
-  }
+document.getElementById("toggleDarkMode").onclick = function () {
+  document.body.classList.toggle("dark-mode");
 };

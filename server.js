@@ -6,8 +6,12 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const path = require("path");
+const http = require("http");
+const socketIo = require("socket.io");
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
 // Middleware
 app.use(bodyParser.json());
@@ -35,6 +39,7 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   profilePicture: { type: String, default: defaultProfilePicture },
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 const User = mongoose.model("User", UserSchema);
@@ -51,7 +56,7 @@ const PhotoSchema = new mongoose.Schema({
 const Photo = mongoose.model("Photo", PhotoSchema);
 
 // JWT Secret
-const jwtSecret = "your_jwt_secret";
+const jwtSecret = process.env.JWT_SECRET || "your_jwt_secret";
 
 // Middleware to verify JWT
 function verifyToken(req, res, next) {
@@ -143,6 +148,38 @@ app.get("/api/users", verifyToken, async (req, res) => {
     res.json(users);
   } catch (error) {
     res.status(500).send("Error fetching users");
+  }
+});
+
+// Follow User
+app.post("/api/users/:id/follow", verifyToken, async (req, res) => {
+  try {
+    const userToFollow = await User.findById(req.params.id);
+    if (!userToFollow) {
+      return res.status(404).send("User not found");
+    }
+    const user = await User.findById(req.user.id);
+    user.following.push(userToFollow._id);
+    await user.save();
+    res.status(200).send("User followed successfully");
+  } catch (error) {
+    res.status(500).send("Error following user");
+  }
+});
+
+// Unfollow User
+app.post("/api/users/:id/unfollow", verifyToken, async (req, res) => {
+  try {
+    const userToUnfollow = await User.findById(req.params.id);
+    if (!userToUnfollow) {
+      return res.status(404).send("User not found");
+    }
+    const user = await User.findById(req.user.id);
+    user.following.pull(userToUnfollow._id);
+    await user.save();
+    res.status(200).send("User unfollowed successfully");
+  } catch (error) {
+    res.status(500).send("Error unfollowing user");
   }
 });
 
@@ -256,6 +293,7 @@ app.post("/api/photos/:id/comments", verifyToken, async (req, res) => {
   });
   try {
     await newComment.save();
+    io.emit("newComment", { photoId: req.params.id, comment: comment });
     res.status(200).send("Comment added successfully");
   } catch (error) {
     res.status(500).send("Error adding comment");
@@ -280,7 +318,7 @@ const LikeSchema = new mongoose.Schema({
 
 const Like = mongoose.model("Like", LikeSchema);
 
-/// Like Photo
+// Like Photo
 app.post("/api/photos/:id/like", verifyToken, async (req, res) => {
   const newLike = new Like({
     photoId: req.params.id,
@@ -347,5 +385,15 @@ app.get("/uploads/defaultProfilePicture", (req, res) => {
   res.sendFile(path.join(__dirname, "cat1.png"));
 });
 
+// Handle socket connections
+io.on("connection", (socket) => {
+  console.log("New client connected");
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
+
 // Start Server
-app.listen(3000, () => console.log("Server started on port 3000"));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server started on port ${PORT}`));

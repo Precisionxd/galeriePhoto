@@ -5,8 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Photo Gallery</title>
     <link rel="stylesheet" href="styles.css" />
+    <meta
+      name="description"
+      content="A photo gallery to share and explore amazing photos."
+    />
+    <meta
+      name="keywords"
+      content="photo gallery, photo sharing, social media"
+    />
+    <meta name="author" content="[Your Name]" />
   </head>
   <body>
+    <nav aria-label="Main Navigation">
+      <button id="homeNavButton" style="display: none">Home</button>
+      <button id="profileNavButton" style="display: none">Profile</button>
+      <button id="uploadNavButton" style="display: none">Upload</button>
+      <button id="searchNavButton" style="display: none">Search</button>
+      <button id="aboutNavButton">About</button>
+      <button id="logoutNavButton" style="display: none">Logout</button>
+      <button id="toggleDarkMode">Toggle Dark Mode</button>
+    </nav>
     <h1>Photo Gallery</h1>
     <div id="user">
       <img
@@ -22,10 +40,6 @@
         "
       />
       <span id="userInfo"></span>
-      <button id="homeButton" style="display: none">Home</button>
-      <button id="logoutButton" style="display: none">Logout</button>
-      <button id="profileButton" style="display: none">Profile</button>
-      <button id="searchButton" style="display: none">Search</button>
     </div>
     <div id="register">
       <h2>Register</h2>
@@ -62,8 +76,6 @@
       </form>
       <h2>Your Photos</h2>
       <div id="gallery"></div>
-      <h2>All Users</h2>
-      <div id="users"></div>
     </div>
     <div id="profile" style="display: none">
       <h2>Profile</h2>
@@ -98,6 +110,16 @@
       </form>
       <div id="searchResults"></div>
     </div>
+    <div id="about" style="display: none">
+      <h2>About Us</h2>
+      <p>
+        Welcome to our Photo Gallery! This website allows you to upload and
+        share your favorite photos with others. You can also comment on and like
+        photos from other users.
+      </p>
+      <p>Created by Mircea.</p>
+    </div>
+    <script src="../node_modules/socket.io/client-dist/socket.io.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
