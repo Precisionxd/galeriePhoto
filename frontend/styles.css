@@ -1,11 +1,16 @@
 /* Base styles */
 body {
   font-family: Arial, sans-serif;
-  margin-top: 60px; /* Adjust for fixed nav bar */
+  background-color: #f5f5f5;
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
+  margin-top: 80px; /* Adjust for fixed nav bar */
 }
 
 h1 {
   text-align: center;
+  margin-bottom: 30px;
+  color: #4caf50;
 }
 
 #register,
@@ -14,23 +19,28 @@ h1 {
 #profile,
 #search,
 #about {
-  width: 300px;
+  width: 100%;
+  max-width: 400px;
   margin: 20px auto;
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  background-color: #f9f9f9;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 form label {
   display: block;
   margin-top: 10px;
+  color: #333;
 }
 
 form input {
-  width: 100%;
+  width: 90%;
   padding: 10px;
   margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 form button {
@@ -42,6 +52,7 @@ form button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 form button:hover {
@@ -53,6 +64,7 @@ form button:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  justify-content: center;
   margin-top: 20px;
 }
 
@@ -61,15 +73,20 @@ form button:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 #gallery img,
 #searchResults img {
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   object-fit: cover;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 10px;
   margin-bottom: 10px;
 }
 
@@ -122,12 +139,13 @@ button {
 }
 
 .photo-container {
-  width: 200px;
+  width: 250px;
   margin-bottom: 20px;
 }
 
 .photo-details {
   text-align: left;
+  width: 100%;
 }
 
 .comment-form {
@@ -137,6 +155,8 @@ button {
 
 .comment-form input {
   margin-bottom: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 .comment-list {
@@ -172,6 +192,7 @@ nav {
   display: flex;
   justify-content: center;
   gap: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 nav button {
@@ -211,12 +232,21 @@ body.dark-mode #search,
 body.dark-mode #about {
   background-color: #1e1e1e;
   border-color: #333333;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode form label {
+  color: #e0e0e0; /* Brighter label color for dark mode */
 }
 
 body.dark-mode form input {
   background-color: #333333;
   color: #ffffff;
   border: 1px solid #444444;
+}
+
+body.dark-mode form input::placeholder {
+  color: #999999; /* Lighter placeholder color for dark mode */
 }
 
 body.dark-mode form button {
