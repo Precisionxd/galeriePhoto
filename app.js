@@ -471,7 +471,6 @@ async function loadComments(photoId, commentsDiv) {
       const commentDiv = document.createElement("div");
       commentDiv.className = "comment";
       commentDiv.innerText = `${comment.comment} - ${new Date(
-        comment.date
       ).toLocaleString()}`;
       commentList.appendChild(commentDiv);
     });
