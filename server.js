@@ -17,9 +17,12 @@ const io = socketIo(server);
 app.use(bodyParser.json());
 app.use(cors());
 
-// Connect to MongoDB
+// Use your MongoDB URI and JWT secret directly here
 const mongoUri =
   "mongodb+srv://admin:123@cluster0.0dhiwc5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const jwtSecret = "6241f447410846a52743a5902c81bd058e32cfbf736652e2d10c976b10b8aba8";
+
+// Connect to MongoDB
 mongoose
   .connect(mongoUri, {
     useNewUrlParser: true,
@@ -32,7 +35,6 @@ mongoose
     console.error("Error connecting to MongoDB", err);
   });
 
-// Default profile picture path
 const defaultProfilePicture = "cat1.png";
 
 // User Schema and Model
@@ -42,7 +44,6 @@ const UserSchema = new mongoose.Schema({
   profilePicture: { type: String, default: defaultProfilePicture },
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
-
 const User = mongoose.model("User", UserSchema);
 
 // Photo Schema and Model
@@ -53,11 +54,7 @@ const PhotoSchema = new mongoose.Schema({
   uploadDate: Date,
   description: String,
 });
-
 const Photo = mongoose.model("Photo", PhotoSchema);
-
-// JWT Secret
-const jwtSecret = process.env.JWT_SECRET || "your_jwt_secret";
 
 // Middleware to verify JWT
 function verifyToken(req, res, next) {
@@ -207,7 +204,7 @@ app.post(
   }
 );
 
-/// Get User's Photos without Pagination
+// Get User's Photos without Pagination
 app.get("/api/photos", verifyToken, async (req, res) => {
   try {
     const photos = await Photo.find({ userId: req.user.id });
@@ -271,7 +268,6 @@ const CommentSchema = new mongoose.Schema({
   comment: String,
   date: Date,
 });
-
 const Comment = mongoose.model("Comment", CommentSchema);
 
 // Add Comment to Photo
@@ -307,7 +303,6 @@ const LikeSchema = new mongoose.Schema({
   photoId: String,
   userId: String,
 });
-
 const Like = mongoose.model("Like", LikeSchema);
 
 // Like Photo
