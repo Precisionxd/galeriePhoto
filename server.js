@@ -8,7 +8,9 @@ const bcrypt = require("bcryptjs");
 const path = require("path");
 const http = require("http");
 const socketIo = require("socket.io");
+
 const app = express();
+const server = http.createServer(app);
 const io = socketIo(server);
 
 // Middleware
@@ -16,7 +18,8 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Connect to MongoDB
-const mongoUri = "mongodb://localhost:27017/photo_gallery";
+const mongoUri =
+  "mongodb+srv://admin:123@cluster0.0dhiwc5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 mongoose
   .connect(mongoUri, {
     useNewUrlParser: true,
