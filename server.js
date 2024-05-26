@@ -88,15 +88,20 @@ const upload = multer({ storage });
 // User Registration
 app.post("/api/register", async (req, res) => {
   const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ username, password: hashedPassword });
   try {
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
     res.status(201).send("User registered");
   } catch (error) {
     res.status(500).send("Error registering user");
   }
 });
+
 
 // User Login
 app.post("/api/login", async (req, res) => {
@@ -107,12 +112,13 @@ app.post("/api/login", async (req, res) => {
       const token = jwt.sign({ id: user._id }, jwtSecret, { expiresIn: "1h" });
       res.json({ token });
     } else {
-      res.status(401).send("Invalid credentials");
+      res.status(401).json({ message: "Invalid username or password" });
     }
   } catch (error) {
     res.status(500).send("Error logging in");
   }
 });
+
 
 // Update User Password
 app.post("/api/updatePassword", verifyToken, async (req, res) => {
