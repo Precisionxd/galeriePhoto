@@ -65,12 +65,23 @@ document.getElementById("logoutNavButton").onclick = function () {
 };
 
 document.getElementById("homeNavButton").onclick = function () {
+  const token = localStorage.getItem("token");
+  
   document.getElementById("upload").style.display = "none";
   document.getElementById("profile").style.display = "none";
   document.getElementById("search").style.display = "none";
   document.getElementById("about").style.display = "none";
   document.getElementById("homeMenu").style.display = "block";
+  
+  if (!token) {
+    document.getElementById("login").style.display = "block"; // Show login form if not logged in
+    document.getElementById("register").style.display = "block"; // Show register form if not logged in
+  } else {
+    document.getElementById("login").style.display = "none"; // Hide login form if logged in
+    document.getElementById("register").style.display = "none"; // Hide register form if logged in
+  }
 };
+
 
 document.getElementById("profileNavButton").onclick = function () {
   document.getElementById("upload").style.display = "none";
@@ -105,7 +116,10 @@ document.getElementById("aboutNavButton").onclick = function () {
   document.getElementById("search").style.display = "none";
   document.getElementById("about").style.display = "block";
   document.getElementById("homeMenu").style.display = "none";
+  document.getElementById("login").style.display = "none"; // Hide login form
+  document.getElementById("register").style.display = "none"; // Hide register form
 };
+
 
 document.getElementById("profileForm").onsubmit = async function (event) {
   event.preventDefault();
